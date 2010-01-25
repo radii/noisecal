@@ -181,12 +181,6 @@ Please use quotes for any parameter that may contain a space
 |disabled
 |3.5<br>mod:3.7.8
 |-
-|'''enablelegacy'''
-|Load events from the older "Title (12-1-2008) - Event 1" format. These older events were used in some version of 3.2 and older. This may increase calendar load times as it much search for older style events and newer events. 
-|enablelegacy
-|disabled
-|3.5.0.1<br>mod: 3.6
-|-
 |'''disablemodes'''
 |This removes the 'year', 'month', 'week' buttons from the top of the respective pages.
 |disablemodes

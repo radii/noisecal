@@ -28,7 +28,7 @@
 		'dayyearTranslated' => "Day of the year",
 		'weekyearTranslated' => "Week of the year"
 	);
-	//frensh
+	// French
 	$messages['fr'] = array(
 		'default_title' => "Public",
 		'year' => 'année',

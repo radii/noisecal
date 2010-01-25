@@ -1,14 +1,4 @@
 <?php
-/* Calendar.php
- *
- * - Eric Fortin < kenyu73@gmail.com >
- *
- * - Original author(s):
- *   	Simson L. Garfinkel < simsong@acm.org >
- *   	Michael Walters < mcw6@aol.com > 
- * See Readme file for full details
- */
-
 // this is the "refresh" code that allows the calendar to switch time periods
 if (isset($_POST["calendar_info"]) ){
 	
@@ -82,65 +72,19 @@ if (isset($_POST["calendar_info"]) ){
 }
 
 # Confirm MW environment
-if (!defined('MEDIAWIKI')) {
-	die( 'This file is a MediaWiki extension, it is not a valid entry point' );
-}
 
-$gCalendarVersion = "v3.8.4 (8/18/2009)";
+
 //$gCalendarVersion = "trunk/beta";
 
 # Credits	
-$wgExtensionCredits['parserhook'][] = array(
-    'name'=>'Calendar',
-    'author'=>'Eric Fortin',
-    'url'=>'http://www.mediawiki.org/wiki/Extension:Calendar_(Kenyu73)',
-    'description'=>'MediaWiki Calendar',
-    'version'=>$gCalendarVersion
-);
-
-$path = dirname( __FILE__ );
-
-$wgExtensionFunctions[] = "wfCalendarExtension";
-$wgExtensionMessagesFiles['wfCalendarExtension'] = "$path/calendar.i18n.php";
-
-
-//$wgHooks['LanguageGetMagic'][]       = 'wfCalendarFunctions_Magic';
-
- // function adds the wiki extension
-function wfCalendarExtension() {
-	global $wgParser;
-	global $wgParser, $wgHooks;
-	global $wgCalendarSidebarRef;
-	$wgParser->setHook( "calendar", "displayCalendar" );
-	wfLoadExtensionMessages( 'wfCalendarExtension' ); 
- //   if ( isset($wgCalendarSidebarRef) ) $wgHooks['SkinTemplateOutputPageBeforeExec'][] = 
-//		'wfCalendarSkinTemplateOutputPageBeforeExec';
-}
-
-// Hook to inject Calendar into sidebar
-function wfCalendarSkinTemplateOutputPageBeforeExec( &$skin, &$tpl ) {
-    global $wgCalendarSidebarRef;
-    $html = displayCalendar('', array('simplemonth' => true, 'fullsubscribe' => $wgCalendarSidebarRef));
-    $html .= displayCalendar('', array('date' => 'today', 'fullsubscribe' => $wgCalendarSidebarRef));
-    $html .= displayCalendar('', array('date' => 'tomorrow', 'fullsubscribe' => $wgCalendarSidebarRef));
-    if ( $html ) $tpl->data['sidebar']['calendar'] = $html;
-    return true;
-}
 
 /*
 // calendar conditionals, used to remove the commands from the page view
 function calendar(){return "";}
 */
 
-require_once ("$path/common.php");
-require_once ("$path/CalendarArticles.php");
-require_once ("$path/ical.class.php");
-require_once ("$path/debug.class.php");
-
 class Calendar extends CalendarArticles
-{  
-	var $debug; //debugger class
-	
+{ 	
 	var $arrSettings = array();
 	
     // [begin] set calendar parameter defaults
@@ -157,11 +101,8 @@ class Calendar extends CalendarArticles
 	var $invalidateCache = false;
 	var $isFullSubscribe = false;	
 										
-    function Calendar($wikiRoot, $debug) {
+    function Calendar($wikiRoot) {
 		$this->wikiRoot = $wikiRoot;
-
-		$this->debug = new debugger('html');
-		$this->debug->enabled($debug);
 
 		// set the calendar's initial date
 		$now = getdate();
@@ -169,10 +110,6 @@ class Calendar extends CalendarArticles
 		$this->month = $this->actualMonth = $now['mon'];
 		$this->year = $this->actualYear = $now['year'];
 		$this->day = $this->actualDay = $now['mday'];
-		
-		$this->daysInMonth = 
-		
-		$this->debug->set("Calendar Constructor Ended.");
     }
 	
 	 // render the calendar
@@ -202,7 +139,6 @@ class Calendar extends CalendarArticles
 		if($this->setting('enablerepeatevents')){
 			$daysBack = $this->setting('enablerepeatevents',false);
 			if($daysBack == '') $daysBack = 15; //default - this checks 1/2 way into the previous month
-			$this->debug->set($daysBack );
 			$this->initalizeMonth( ($this->day + $daysBack), 0); 
 		}
 		else
@@ -229,7 +165,6 @@ class Calendar extends CalendarArticles
 			
 		//tag on extra info at the end of whatever is displayed
 		$ret .= $this->buildTrackTimeSummary();
-		$ret .= $this->debug->get();
 	
 		return $ret;
 	 }
@@ -238,8 +173,6 @@ class Calendar extends CalendarArticles
 	// $back: days back from ($this->day)
 	// $forward: days ahead from ($this->day)
 	function initalizeMonth($back, $forward){
-		$this->debug->set('initalizeMonth called');
-		
 		// just make sure we have a solid negitive here
 		$back = -(abs($back));
 		
@@ -258,9 +191,7 @@ class Calendar extends CalendarArticles
 		}	
 	}
 	
-	function initalizeHTML(){
-	
-		$this->debug->set("initalizeHTML() called");
+	function initalizeHTML() {
 		global $wgOut,$wgScriptPath, $wgVersion;
 
 		$cssURL = $this->getURLRelativePath() . "/templates/";
@@ -552,8 +483,6 @@ class Calendar extends CalendarArticles
 				}				
 				Common::getNextValidDate($month,$day,$year);//bump the date up by 1
 			}
-		
-			$this->debug->set("renderEventList Ended");
 			
 			$ret = "<i> " . $this->buildConfigLink(true) . "</i>" 
 				. $events;
@@ -581,9 +510,7 @@ class Calendar extends CalendarArticles
 	}
 	
 	// load ical RRULE (recurrence) events into memory
-	function buildVCalEvents(){	
-		$this->debug->set("buildVCalEvents started");
-		
+	function buildVCalEvents() {
 		$year = $this->year;
 		$month = 1;//$this->month;
 		$additionMonths = $this->month + 12;
@@ -633,18 +560,15 @@ class Calendar extends CalendarArticles
 				$this->year = $parseDate[2] + 0;
 			}
 		}
-		$this->debug->set("** updateDate Ended");	
 	}
 	
 	// specific date mode
-	function renderDate(){
-		
+	function renderDate() {
 		$this->initalizeMonth(0,1);
 		
 		$ret = $this->buildConfigLink(true)
 			. $this->getHTMLForDay($this->month, $this->day, $this->year, 'long', 'day');
 			
-		$this->debug->set("renderDate Ended");		
 		return "<table>$ret</table>";
 	}
 
@@ -856,8 +780,7 @@ class Calendar extends CalendarArticles
 		
 	    $ret .= $tempString;	
 		$ret = $this->stripLeadingSpace($ret);
-		
-		$this->debug->set("renderMonth Ended");		
+
 	    return $ret;	
 	}
 	
@@ -974,13 +897,22 @@ class Calendar extends CalendarArticles
     // builds the day events into memory
 	// uses prefix seaching (NS:page/name/date)... anything after doesn't matter
     function buildArticlesForDay($month, $day, $year) {
-	
 		//$date = "$month-$day-$year";
 		$date = $this->userDateFormat($month, $day, $year);
 		
 		$search = "$this->calendarPageName/$date";
 		$pages = PrefixSearch::titleSearch( $search, '100');
-		
+
+        $category = Category::newFromName("Event");
+        foreach ($category->getMembers() as $eventTitle) {
+            if ($eventTitle->getNamespace() == NS_CATEGORY) {
+			    // TODO
+			    // This is a sub-category. We should recusre into it.
+			} else if ($eventTitle->isContentPage()) {
+				$event = Event::newFromTitle($eventTitle);
+			}
+		}
+	
 		foreach($pages as $page) {
 			$this->addArticle($month, $day, $year, $page);
 		}
@@ -990,22 +922,9 @@ class Calendar extends CalendarArticles
 		foreach($this->subscribedPages as $subscribedPage){
 			$search = "$subscribedPage/$date";
 			$pages = PrefixSearch::titleSearch( $search, '100' );
-			foreach($pages as $page)
-				$this->addArticle($month, $day, $year, $page);			
-		}
-	
-		// depreciated (around 1/1/2009)
-		// old format: ** name (12-15-2008) - Event 1 **
-		if($this->setting('enablelegacy')){
-			$date = "$month-$day-$year";
-			$name = $this->setting('name');
-			$search = "$this->namespace:$name ($date)";
-			$pages = PrefixSearch::titleSearch( $search, '100');
-			
 			foreach($pages as $page) {
-				$this->addArticle($month, $day, $year, $page);
+				$this->addArticle($month, $day, $year, $page);			
 			}
-			unset ($pages);
 		}
 	}
 
@@ -1221,8 +1140,6 @@ class Calendar extends CalendarArticles
 
 		$ret .= "<tr><td width=1% valign=top>$tag_weekBack</td>" . $week . "<td width=1% valign=top>$tag_weekForward</td></tr>";
 		
-		$this->debug->set($year);	
-		$this->debug->set("renderWeek Ended");	
 		return $html_head . $ret . $this->tag_HiddenData . $html_foot;
 	}
 	
@@ -1247,8 +1164,6 @@ class Calendar extends CalendarArticles
 	
 	// php has a defualt of 30sec to run a script, so it can timeout...
 	function load_iCal($ical_data){
-		$this->debug->set('load_iCal Started');
-		
 		$bMulti = false;
 		$iCal = new ical_calendar;
 
@@ -1330,8 +1245,6 @@ class Calendar extends CalendarArticles
 		
 		$cookieName = str_replace(' ', '_', ($this->calendarPageName . "_ical_count"));
 		setcookie($cookieName,$cnt);
-				
-		$this->debug->set('load_iCal Ended');
 	}
 	
 	// get the extension short 'URL' path ex:( /mediawiki/extensions/calendar/ )
@@ -1378,8 +1291,7 @@ function displayCalendar($paramstring, $params = array()) {
 	
 	$config_page = " ";
 
-	$calendar = null;	
-	$calendar = new Calendar($wikiRoot, isset($params["debug"]));
+	$calendar = new Calendar($wikiRoot);
 
 	//return $calendar->getURLRelativePath();
 	
@@ -1502,8 +1414,6 @@ function displayCalendar($paramstring, $params = array()) {
 
 	$cookie_name = preg_replace('/(\.|\s)/',  '_', ($title . " " . $name)); //replace periods and spaces
 	if(isset($_COOKIE[$cookie_name])){
-		$calendar->debug->set('cookie loaded');
-
 		$arrSession = split("`", $_COOKIE[$cookie_name]);
 		$calendar->setMonth($arrSession[0]);
 		$calendar->setDay($arrSession[1]);
@@ -1525,8 +1435,6 @@ function displayCalendar($paramstring, $params = array()) {
 	if(isset($params['simplemonth'])) $userMode = 'simplemonth';
 
 	if(isset($_COOKIE['calendar_ical'])){
-		$calendar->debug->set('ical cookie loaded');		
-
 		$calendar->load_iCal($_COOKIE['calendar_ical']);
 		
 		//delete ical file in "mediawiki/images" folder	
@@ -1563,5 +1471,4 @@ function wfCalendarFunctions_Magic( &$magicWords, $langCode ) {
     }
     return true;
 }
-
-
+?>

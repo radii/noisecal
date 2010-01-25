@@ -538,9 +538,7 @@
 		}
 	}
 	
-	private function buildRecurrenceEvent($month, $day, $year, $event, $page){
-		$this->debug->set('buildRecurrenceEvent started');
-		
+	private function buildRecurrenceEvent($month, $day, $year, $event, $page) {
 		$recurrence_page = "$this->calendarPageName/recurrence";
 		
 		$article = new Article(Title::newFromText($page));
